@@ -1,900 +1,663 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>熊的小屋 · 海边小屋</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>海边独墅 · 地中海白崖</title>
 <style>
-  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0b0e1a; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
-  #info {
-    position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
-    color: #fff; background: rgba(30,60,90,.55); padding: 8px 18px; border-radius: 20px;
-    font-size: 14px; pointer-events: none; backdrop-filter: blur(4px);
-    box-shadow: 0 4px 20px rgba(0,0,0,.3); letter-spacing: .5px;
-    white-space: nowrap; z-index: 10;
-  }
-  @media (max-width: 640px) {
-    #info { font-size: 11px; padding: 6px 12px; white-space: normal; max-width: 92vw; text-align: center; line-height: 1.5; }
-  }
-  #ui {
-    position: fixed; top: 14px; right: 14px; display: flex; gap: 8px; z-index: 20;
-  }
-  #ui button {
-    height: 46px; padding: 0 16px; border: none; border-radius: 12px; cursor: pointer;
-    font-size: 15px; color: #234; background: rgba(255,255,255,.82);
-    box-shadow: 0 4px 16px rgba(0,0,0,.18); backdrop-filter: blur(6px);
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  #ui button:active { transform: scale(.96); }
-  @media (max-width: 640px) {
-    #ui button { height: 44px; padding: 0 12px; font-size: 13px; }
-  }
-  #loader {
-    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(160deg,#8fc7ee,#e8f4ff); color: #1d4e79; font-size: 18px; letter-spacing: 2px; z-index: 99;
-    transition: opacity .6s;
-  }
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0e1a24;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+  #app{position:fixed;inset:0}
+  #ui{position:fixed;top:14px;right:14px;display:flex;gap:8px;z-index:10}
+  #ui button{border:1px solid rgba(255,255,255,.45);background:rgba(15,30,40,.45);color:#fff;font-size:13px;padding:7px 12px;border-radius:20px;cursor:pointer;backdrop-filter:blur(6px);transition:.25s}
+  #ui button:hover{background:rgba(255,255,255,.25)}
+  #tip{position:fixed;bottom:16px;left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:12px;z-index:10;pointer-events:none;letter-spacing:.5px}
+  canvas{display:block;touch-action:none}
+  @media(max-width:640px){#ui button{font-size:12px;padding:6px 10px}}
 </style>
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
 </script>
 </head>
 <body>
-<div id="loader">正在加载「熊的小屋」…</div>
-<div id="info">🖱 拖拽旋转 · 滚轮缩放 · 点小熊聊天 · 点门开门 · 点窗户闪灯 · 松手自动展示</div>
+<div id="app"></div>
 <div id="ui">
-  <button id="btnMode">🌙 夜晚</button>
-  <button id="btnSound">🔊 声音</button>
+  <button id="btnMode">☀ 日夜</button>
+  <button id="btnSound">♪ 声音</button>
 </div>
+<div id="tip">拖拽旋转 · 点击蓝色大门可开关 · 点击窗户会亮灯</div>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ================= 基础场景 =================
+const app = document.getElementById('app');
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xdceefb, 28, 75);
-
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 200);
-camera.position.set(7, 5.2, 10);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, .1, 400);
+camera.position.set(15, 9, 16);
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
-document.body.appendChild(renderer.domElement);
+renderer.toneMappingExposure = 1.05;
+app.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 1.3, 0);
+controls.target.set(2.2, 2.4, 0);
 controls.enableDamping = true;
-controls.dampingFactor = .06;
-controls.minDistance = 4;
-controls.maxDistance = 24;
-controls.maxPolarAngle = Math.PI / 2.05;
+controls.dampingFactor = .07;
+controls.minDistance = 6;
+controls.maxDistance = 42;
+controls.maxPolarAngle = Math.PI/2.05;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 1.1;
-controls.addEventListener('start', () => controls.autoRotate = false);
-controls.addEventListener('end', () => setTimeout(() => controls.autoRotate = true, 3000));
+controls.autoRotateSpeed = .9;
 
-// ================= 光照 =================
-const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x8a7a5a, .85);
-scene.add(hemi);
-
-const sun = new THREE.DirectionalLight(0xfff0d0, 1.7);
-sun.position.set(8, 10, 5);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.camera.near = .5; sun.shadow.camera.far = 30;
-sun.shadow.camera.left = -8; sun.shadow.camera.right = 8;
-sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -8;
-scene.add(sun);
-
-const amb = new THREE.AmbientLight(0xffffff, .22);
-scene.add(amb);
-
-// ================= 日夜配色表 =================
+// ===== 日夜配色 =====
 const C = {
-  skyTop:      { day: new THREE.Color(0x55aef0), night: new THREE.Color(0x0b1c3f) },
-  skyHorizon:  { day: new THREE.Color(0xffd9a4), night: new THREE.Color(0x2a3a5e) },
-  skyWarm:     { day: new THREE.Color(0xffb36b), night: new THREE.Color(0x3c4c6e) },
-  fog:         { day: new THREE.Color(0xdceefb), night: new THREE.Color(0x14233a) },
-  oceanDeep:   { day: new THREE.Color(0x3d7ea8), night: new THREE.Color(0x1b3a5c) },
-  oceanShallow:{ day: new THREE.Color(0x55a8c8), night: new THREE.Color(0x2c5074) },
-  oceanSunset: { day: new THREE.Color(0xff9a55), night: new THREE.Color(0x24334d) },
-  sunCol:      { day: new THREE.Color(0xfff0d0), night: new THREE.Color(0x9db8ff) },
-  hemiCol:     { day: new THREE.Color(0xcfe8ff), night: new THREE.Color(0x1e2c4c) },
-  ambCol:      { day: new THREE.Color(0xffffff), night: new THREE.Color(0x556688) },
-  sand:        { day: new THREE.Color(0xe9d7ab), night: new THREE.Color(0x9a8a68) },
-  deck:        { day: new THREE.Color(0xcfa86f), night: new THREE.Color(0x85755a) }
+  skyTop:  {day:new THREE.Color(0x6fb8e8), night:new THREE.Color(0x050d1f)},
+  skyHor:  {day:new THREE.Color(0xf2d9b8), night:new THREE.Color(0x13233f)},
+  skyWarm: {day:new THREE.Color(0xf6a05c), night:new THREE.Color(0x2a1a3a)},
+  fog:     {day:new THREE.Color(0xcfdbe8), night:new THREE.Color(0x0a1424)},
+  oDeep:   {day:new THREE.Color(0x16638a), night:new THREE.Color(0x06182b)},
+  oShal:   {day:new THREE.Color(0x4fc3c0), night:new THREE.Color(0x0c2838)},
+  oSun:    {day:new THREE.Color(0xf0b56a), night:new THREE.Color(0x3a2a4a)},
+  sunCol:  {day:new THREE.Color(0xfff3da), night:new THREE.Color(0x8fa9d8)},
+  hemi:    {day:new THREE.Color(0xf6e8d8), night:new THREE.Color(0x3a4a6a)},
+  amb:     {day:new THREE.Color(0x506a86), night:new THREE.Color(0x1a2436)},
+  sand:    {day:new THREE.Color(0xe9d5a8), night:new THREE.Color(0x5a4a32)},
+  rock:    {day:new THREE.Color(0xb8a89a), night:new THREE.Color(0x4a4238)},
+  wall:    {day:new THREE.Color(0xf3ecdf), night:new THREE.Color(0x5c5666)},
+  roof:    {day:new THREE.Color(0xc25a36), night:new THREE.Color(0x4a2c2c)},
+  tile:    {day:new THREE.Color(0x2a6f97), night:new THREE.Color(0x16344f)},
+  wood:    {day:new THREE.Color(0x8a5f3a), night:new THREE.Color(0x3a2c22)},
 };
-const CUR = {};
-for (const k in C) CUR[k] = new THREE.Color();
-let nightMode = false, dayFactor = 1; // 1=白天 0=夜晚
+const CUR = new THREE.Color();
+function lerp(k){ for(const key in C){ const o=C[key]; if(!o.cur) o.cur=new THREE.Color(); CUR.copy(o.night).lerp(o.day, k); o.cur.set(CUR.r, CUR.g, CUR.b); } }
 
-// ================= 天空（落日渐变）=================
-const sky = new THREE.Mesh(
-  new THREE.SphereGeometry(60, 32, 16),
-  new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    uniforms: {
-      topColor:    { value: new THREE.Color(C.skyTop.day) },
-      horizonColor:{ value: new THREE.Color(C.skyHorizon.day) },
-      warmColor:   { value: new THREE.Color(C.skyWarm.day) }
-    },
-    vertexShader: `
-      varying vec3 vPos;
-      void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
-    `,
-    fragmentShader: `
-      uniform vec3 topColor; uniform vec3 horizonColor; uniform vec3 warmColor;
-      varying vec3 vPos;
-      void main(){
-        float h = normalize(vPos).y;
-        vec3 col = mix(horizonColor, topColor, pow(clamp(h * 1.25 + .15, 0.0, 1.0), .55));
-        float band = smoothstep(-.08, .22, h) * (1.0 - smoothstep(.18, .6, h));
-        col = mix(col, warmColor, band * .85);
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `
-  })
-);
+// ===== 灯光 =====
+const hemi = new THREE.HemisphereLight(0xf6e8d8, 0x4a5a6a, .8);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff3da, 2.2);
+sun.position.set(14, 18, -8);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left=-20; sun.shadow.camera.right=20;
+sun.shadow.camera.top=16; sun.shadow.camera.bottom=-16;
+sun.shadow.camera.near=2; sun.shadow.camera.far=60;
+scene.add(sun);
+const amb = new THREE.AmbientLight(0x506a86, .55);
+scene.add(amb);
+scene.fog = new THREE.Fog(0x0a1424, 30, 130);
+
+// ===== 天空 =====
+const skyGeo = new THREE.SphereGeometry(180, 32, 16);
+const skyMat = new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false,
+  uniforms:{top:{value:new THREE.Color()},hor:{value:new THREE.Color()},warm:{value:new THREE.Color()}},
+  vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`varying vec3 vP; uniform vec3 top,hor,warm;
+    void main(){ float h=normalize(vP).y; vec3 c;
+      c=mix(warm,hor,smoothstep(-.05,.18,h));
+      c=mix(c,top,smoothstep(.18,.62,h));
+      gl_FragColor=vec4(c,1.0); }`
+});
+const sky = new THREE.Mesh(skyGeo, skyMat);
 scene.add(sky);
 
-// 星星（夜晚显示）
-const starGeo = new THREE.BufferGeometry();
-{
-  const pts = [];
-  for (let i = 0; i < 280; i++) {
-    const th = Math.random() * Math.PI * 2, ph = Math.acos(Math.random() * .9 + .1);
-    pts.push(Math.sin(ph) * Math.cos(th) * 58, Math.cos(ph) * 58, Math.sin(ph) * Math.sin(th) * 58);
-  }
-  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+// 太阳/月亮/星星
+const sunBall = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 16), new THREE.MeshBasicMaterial({color:0xfff3da, fog:false}));
+sunBall.position.set(-38, 26, -30); scene.add(sunBall);
+const glowMat = new THREE.SpriteMaterial({map:new THREE.CanvasTexture(glowCanvas()), color:0xffdca8, transparent:true, opacity:.85, blending:THREE.AdditiveBlending, depthWrite:false, fog:false});
+const glow = new THREE.Sprite(glowMat); glow.scale.set(16,16,1); glow.position.copy(sunBall.position); scene.add(glow);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(1.2, 20, 14), new THREE.MeshBasicMaterial({color:0xd8e2ee, fog:false}));
+moon.position.set(42, 24, -26); scene.add(moon);
+function glowCanvas(){
+  const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d');
+  const g=x.createRadialGradient(64,64,4,64,64,64);
+  g.addColorStop(0,'rgba(255,230,190,1)'); g.addColorStop(.3,'rgba(255,200,140,.5)'); g.addColorStop(1,'rgba(255,180,120,0)');
+  x.fillStyle=g; x.fillRect(0,0,128,128); return c;
 }
-const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: .13, transparent: true, opacity: 0, depthWrite: false });
-const stars = new THREE.Points(starGeo, starsMat);
+const starCount = 260;
+const starPos = new Float32Array(starCount*3);
+for(let i=0;i<starCount;i++){
+  const th=Math.random()*Math.PI*2, ph=Math.acos(Math.random()*.9);
+  starPos[i*3]=Math.cos(th)*Math.sin(ph)*170;
+  starPos[i*3+1]=Math.sin(ph)*80+10;
+  starPos[i*3+2]=Math.sin(th)*Math.sin(ph)*170;
+}
+const stars = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(starPos,3)),
+  new THREE.PointsMaterial({color:0xdfe8ff, size:.7, transparent:true, opacity:0, fog:false}));
 scene.add(stars);
 
-// 太阳 + 光晕（白天显示）
-const sunMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(1.1, 16, 12),
-  new THREE.MeshBasicMaterial({ color: 0xffe8a8, transparent: true, opacity: 1 })
-);
-sunMesh.position.set(14, 5.5, -34);
-scene.add(sunMesh);
-const glowCanvas = document.createElement('canvas');
-glowCanvas.width = glowCanvas.height = 128;
-{
-  const g = glowCanvas.getContext('2d');
-  const gr = g.createRadialGradient(64, 64, 4, 64, 64, 62);
-  gr.addColorStop(0, 'rgba(255,225,170,0.95)');
-  gr.addColorStop(.35, 'rgba(255,210,150,0.45)');
-  gr.addColorStop(1, 'rgba(255,200,140,0)');
-  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+// 云
+function mkCloud(sx, sy, y){
+  const g=new THREE.Group();
+  for(let i=0;i<5;i++){
+    const r=.9+Math.random()*.9;
+    const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,9),
+      new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.72, fog:false}));
+    m.position.set(i*1.1-sx*.6, Math.random()*.4, (Math.random()-.5)*1.2);
+    m.scale.set(1, .55, .8); g.add(m);
+  }
+  g.position.set(0, sy, 0); g.userData.speed=sx*.0008;
+  return g;
 }
-const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: new THREE.CanvasTexture(glowCanvas), blending: THREE.AdditiveBlending,
-  transparent: true, depthWrite: false, opacity: .75
-}));
-sunGlow.scale.set(7.5, 7.5, 1);
-sunGlow.position.set(14, 5.5, -34);
-scene.add(sunGlow);
+const clouds=[mkCloud(6,17,-22), mkCloud(5,19,10), mkCloud(8,15,26), mkCloud(7,20,-40), mkCloud(5,13,44)];
+clouds.forEach(c=>scene.add(c));
 
-// 月亮（夜晚显示）
-const moonMat = new THREE.MeshBasicMaterial({ color: 0xfff3d8, transparent: true, opacity: 0 });
-const moon = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12), moonMat);
-moon.position.set(-16, 8, -36);
-scene.add(moon);
-
-// ================= 沙滩 =================
-const sand = new THREE.Mesh(
-  new THREE.CircleGeometry(10, 48),
-  new THREE.MeshStandardMaterial({ color: 0xe9d7ab, roughness: 1, metalness: 0 })
-);
-sand.rotation.x = -Math.PI / 2;
-sand.position.y = 0;
-sand.receiveShadow = true;
-scene.add(sand);
-
-const deck = new THREE.Mesh(
-  new THREE.CircleGeometry(2.5, 32),
-  new THREE.MeshStandardMaterial({ color: 0xcfa86f, roughness: .95 })
-);
-deck.rotation.x = -Math.PI / 2; deck.position.y = .02;
-deck.receiveShadow = true;
-scene.add(deck);
-
-// ================= 大海（着色器：波浪+波光+落日+浪花）=================
-const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(90, 34, 120, 40),
-  new THREE.ShaderMaterial({
-    uniforms: {
-      uTime:    { value: 0 },
-      uDeep:    { value: new THREE.Color(C.oceanDeep.day) },
-      uShallow: { value: new THREE.Color(C.oceanShallow.day) },
-      uSunset:  { value: new THREE.Color(C.oceanSunset.day) },
-      uNight:   { value: 0 },
-      uCamPos:  { value: camera.position.clone() }
-    },
-    vertexShader: `
-      uniform float uTime;
-      varying vec3 vWorld; varying vec3 vNormal;
-      void main(){
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
-        float wx = worldPos.x, wz = worldPos.z;
-        float h = sin(wx * .5 + uTime * 1.1) * .16 + sin(wz * .7 - uTime * .8) * .12;
-        worldPos.y += h;
-        vec3 n = normalize(vec3(
-          -0.5 * .16 * cos(wx * .5 + uTime * 1.1),
-          1.0,
-          -0.7 * .12 * cos(wz * .7 - uTime * .8)
-        ));
-        vNormal = normalize((modelMatrix * vec4(n, 0.0)).xyz);
-        vWorld = worldPos.xyz;
-        gl_Position = projectionMatrix * viewMatrix * worldPos;
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSunset;
-      uniform float uNight; uniform vec3 uCamPos;
-      varying vec3 vWorld; varying vec3 vNormal;
-      void main(){
-        vec3 n = normalize(vNormal);
-        float slope = 1.0 - n.y;
-        vec3 base = mix(uDeep, uShallow, clamp(slope * 4.0 + .2, 0.0, 1.0));
-        // 金色波光
-        float s1 = pow(max(sin(vWorld.x * 2.6 + uTime * 1.2) * sin(vWorld.z * 3.1 - uTime * 1.4), 0.0), 8.0);
-        float s2 = pow(max(sin(vWorld.x * 11.0 - uTime * 2.2) * sin(vWorld.z * 12.0 + uTime * 1.8), 0.0), 12.0);
-        vec3 col = base + vec3(1.0, .95, .75) * (s1 * .5 + s2 * .7);
-        // 远处落日余晖
-        float distZ = -vWorld.z;
-        col = mix(col, uSunset, smoothstep(8.0, 30.0, distZ) * (1.0 - uNight));
-        // 岸边浪花
-        float shore = -vWorld.z - 5.0;
-        float foam = (1.0 - smoothstep(0.0, .5, shore)) * .8 * (.6 + .4 * sin(uTime * 2.0));
-        col = mix(col, vec3(.95, .97, 1.0), foam * .9);
-        // 简单光照
-        vec3 L = normalize(vec3(.5, 1.0, .3));
-        float diff = clamp(dot(n, L), 0.0, 1.0);
-        col *= .55 + diff * .9;
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `
-  })
-);
-ocean.rotation.x = -Math.PI / 2;
-ocean.position.set(0, -0.14, -22);
+// ===== 海洋 =====
+const oceanMat = new THREE.ShaderMaterial({
+  uniforms:{
+    uTime:{value:0}, uDeep:{value:new THREE.Color()}, uShal:{value:new THREE.Color()}, uSun:{value:new THREE.Color()},
+    uNight:{value:0}, uCam:{value:new THREE.Vector3()}
+  },
+  vertexShader:`uniform float uTime; varying vec2 vUv; varying vec3 vN; varying vec3 vP;
+    void main(){
+      vUv=uv; vP=position;
+      float w1=sin(position.x*.55+uTime*.9)*.5, w2=sin(position.z*.7+uTime*1.2)*.55, w3=sin((position.x+position.z)*.3+uTime*.6)*.3;
+      vec3 p=position; p.y+=w1+w2+w3;
+      vec3 dx=vec3(1., cos(position.x*.55+uTime*.9)*.55, 0.);
+      vec3 dz=vec3(0., cos(position.z*.7+uTime*1.2)*.7, 1.);
+      vN=normalize(cross(dz,dx));
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
+    }`,
+  fragmentShader:`uniform float uTime,uNight; uniform vec3 uDeep,uShal,uSun; uniform vec3 uCam;
+    varying vec2 vUv; varying vec3 vN; varying vec3 vP;
+    void main(){
+      vec3 n=normalize(vN);
+      float d=length(vP.xz);
+      vec3 col=mix(uDeep,uShal,smoothstep(34.,8.,d));
+      float sp=pow(max(dot(n,normalize(vec3(.5,.9,.3))),0.),24.)*smoothstep(30.,8.,d);
+      col+=uSun*sp*(.55+.45*uNight);
+      col+=uSun*smoothstep(42.,20.,d)*.18*(1.-uNight);
+      float foam=smoothstep(.32,.18,abs(vP.y))*smoothstep(14.,6.,d);
+      col=mix(col,vec3(.95,.98,1.),foam*.6);
+      float nd=length(uCam-vP); col*=exp(-nd*.004);
+      gl_FragColor=vec4(col,1.0);
+    }`
+});
+const ocean = new THREE.Mesh(new THREE.PlaneGeometry(240, 160, 96, 64), oceanMat);
+ocean.rotation.x = -Math.PI/2;
+ocean.position.y = .5;
 scene.add(ocean);
 
-// ================= 材质工具 =================
-const mat = (color, rough = .85, metal = 0, emissive = 0x000000, ei = 0) =>
-  new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, emissive, emissiveIntensity: ei });
-
-// ================= 小屋 =================
-const house = new THREE.Group();
-const wallMat = mat(0xfdf6e3, .9);
-const beamMat = mat(0x8a5a3b, .95);
-const roofMat = mat(0x7fb8e0, .7);
-const doorMat = mat(0x8a5a2f, .95);
-
-const wall = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.1, 3), wallMat);
-wall.position.y = 1.05;
-wall.castShadow = wall.receiveShadow = true;
-house.add(wall);
-
-for (const x of [-.85, .85]) {
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(.18, 2.15, 3.06), beamMat);
-  beam.position.set(x, 1.05, 0);
-  beam.castShadow = beam.receiveShadow = true;
-  house.add(beam);
+// ===== 岩石台地 + 沙滩 =====
+function rock(r, h, seed, pos, scl, matColor){
+  const g=new THREE.DodecahedronGeometry(r, 0);
+  const p=new THREE.Mesh(g, new THREE.MeshStandardMaterial({color:matColor, roughness:.95, flatShading:true}));
+  const rnd=seed*999;
+  for(let i=0;i<g.attributes.position.count;i++){
+    g.attributes.position.setXYZ(i,
+      g.attributes.position.getX(i)*(1+Math.sin(rnd+i*12.9898)*.3),
+      g.attributes.position.getY(i)*(1+Math.sin(rnd*2+i*7.7)*.4),
+      g.attributes.position.getZ(i)*(1+Math.sin(rnd*3+i*5.3)*.3));
+  }
+  g.computeVertexNormals();
+  p.position.set(pos[0], pos[1], pos[2]);
+  p.scale.set(scl[0], scl[1], scl[2]);
+  p.castShadow = p.receiveShadow = true;
+  return p;
 }
+const rockMat = new THREE.MeshStandardMaterial({color:0xb8a89a, roughness:.95, flatShading:true});
+const cliff = new THREE.Mesh(new THREE.BoxGeometry(14, 4, 12), rockMat);
+cliff.position.set(4.5, 1.2, .5); cliff.castShadow=cliff.receiveShadow=true; scene.add(cliff);
+// 台地顶面
+const plateau = new THREE.Mesh(new THREE.BoxGeometry(12.5, .8, 10), rockMat);
+plateau.position.set(4.5, 3.3, .5); plateau.receiveShadow=true; scene.add(plateau);
+// 斜向海边的坡（用旋转 box 堆出海岸线）
+const slope = new THREE.Mesh(new THREE.BoxGeometry(12, 1, 10), rockMat);
+slope.position.set(3.8, 2.1, .5); slope.rotation.z = .28; slope.castShadow=slope.receiveShadow=true; scene.add(slope);
+// 沙滩
+const sand = new THREE.Mesh(new THREE.CircleGeometry(5.2, 28), new THREE.MeshStandardMaterial({color:0xe9d5a8, roughness:1}));
+sand.rotation.x = -Math.PI/2; sand.position.set(-2.2, .42, 3.4); sand.receiveShadow=true; scene.add(sand);
+// 礁石
+[
+  [rock(1.1, .8, 3, [-1.4,.9,1.6], [1.5,1.1,1.2])],
+  [rock(.7, .6, 7, [1.6,1.0,-2.8], [1.2,.9,1])],
+  [rock(1.3, .9, 11, [-3.6,1.1,4.2], [1.6,1.2,1.3])],
+  [rock(.5, .5, 13, [6.8,.9,3.4], [1,1,1])],
+  [rock(.8, .6, 17, [-5.4,1.0,-1.8], [1.3,1,1.2])],
+  [rock(.55,.5,19,[2.8,.85,5.6],[1,1,1])],
+].forEach(a=>{ const r=a[0]; scene.add(r); });
 
-const roofShape = new THREE.Shape();
-roofShape.moveTo(-2.35, 0);
-roofShape.lineTo(2.35, 0);
-roofShape.lineTo(0, 1.45);
-roofShape.closePath();
-const roof = new THREE.Mesh(
-  new THREE.ExtrudeGeometry(roofShape, { depth: 3.6, bevelEnabled: false }),
-  roofMat
-);
-roof.position.set(0, 2.1, -1.8);
-roof.castShadow = roof.receiveShadow = true;
-house.add(roof);
+// ===== 别墅 =====
+const villa = new THREE.Group();
+villa.position.set(4.5, 3.3, .5);
+scene.add(villa);
+const wallMat = new THREE.MeshStandardMaterial({color:0xf3ecdf, roughness:.7});
+const wallShadow = new THREE.MeshStandardMaterial({color:0xd9cfc0, roughness:.8});
+const roofMat = new THREE.MeshStandardMaterial({color:0xc25a36, roughness:.75, flatShading:true});
+const tileMat = new THREE.MeshStandardMaterial({color:0x2a6f97, roughness:.5});
+const woodMat = new THREE.MeshStandardMaterial({color:0x8a5f3a, roughness:.8});
+const stoneMat = new THREE.MeshStandardMaterial({color:0x9a928a, roughness:.95});
 
-// 门（可开关：以左侧为铰链）
+// 石基
+const base = new THREE.Mesh(new THREE.BoxGeometry(7.4, .7, 5.6), stoneMat);
+base.position.set(0, .35, 0); base.castShadow=base.receiveShadow=true; villa.add(base);
+
+// 主楼（白墙，带轻微斜面顶）
+const mainWall = new THREE.Mesh(new THREE.BoxGeometry(5.2, 3.4, 4.4), wallMat);
+mainWall.position.set(-.7, 2.35, 0); mainWall.castShadow=mainWall.receiveShadow=true; villa.add(mainWall);
+// 主楼陶土双坡屋顶
+const mainRoof = new THREE.Mesh(new THREE.ConeGeometry(3.6, 1.9, 4), roofMat);
+mainRoof.position.set(-.7, 4.5, 0); mainRoof.rotation.y = Math.PI/4; mainRoof.castShadow=true; villa.add(mainRoof);
+// 屋脊装饰
+const ridge = new THREE.Mesh(new THREE.BoxGeometry(.18, .12, 4.4), new THREE.MeshStandardMaterial({color:0x8a3a24, roughness:.8}));
+ridge.position.set(-.7, 5.42, 0); ridge.rotation.z = .1; villa.add(ridge);
+
+// 右翼（悬挑露台的体块）
+const wing = new THREE.Mesh(new THREE.BoxGeometry(3.1, 2.2, 3.6), wallMat);
+wing.position.set(2.4, 1.8, 0); wing.castShadow=wing.receiveShadow=true; villa.add(wing);
+// 右翼单坡屋顶
+const wingRoof = new THREE.Mesh(new THREE.BoxGeometry(3.7, .5, 4.2), roofMat);
+wingRoof.position.set(2.4, 3.15, 0); wingRoof.rotation.z = .42; wingRoof.castShadow=true; villa.add(wingRoof);
+
+// 塔楼（瞭望阁）
+const tower = new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.6, 1.7), wallMat);
+tower.position.set(-2.7, 1.7, 1.7); tower.castShadow=tower.receiveShadow=true; villa.add(tower);
+const towerRoof = new THREE.Mesh(new THREE.ConeGeometry(1.25, 1.1, 4), roofMat);
+towerRoof.position.set(-2.7, 3.55, 1.7); towerRoof.rotation.y = Math.PI/4; towerRoof.castShadow=true; villa.add(towerRoof);
+// 塔楼小平台 + 旗杆 + 旗
+const towerDeck = new THREE.Mesh(new THREE.BoxGeometry(1.9, .12, 1.9), woodMat);
+towerDeck.position.set(-2.7, 3.1, 1.7); villa.add(towerDeck);
+const pole = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 1.5), woodMat);
+pole.position.set(-2.7, 3.9, 1.7); villa.add(pole);
+const flag = new THREE.Mesh(new THREE.PlaneGeometry(.9, .5), new THREE.MeshBasicMaterial({color:0x2a6f97, side:THREE.DoubleSide}));
+flag.position.set(-2.42, 4.05, 1.7); villa.add(flag);
+
+// 大门（地中海蓝拱门）——可点击
 const doorGroup = new THREE.Group();
-const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(.9, 1.35, .15), doorMat);
-doorMesh.position.set(.45, .67, 0);
-doorMesh.castShadow = doorMesh.receiveShadow = true;
-doorGroup.add(doorMesh);
-const doorArc = new THREE.Mesh(new THREE.CylinderGeometry(.45, .45, .15, 16, 1, false, 0, Math.PI), doorMat);
-doorArc.position.set(.45, 1.42, 0);
-doorArc.castShadow = doorArc.receiveShadow = true;
-doorGroup.add(doorArc);
-const knob = new THREE.Mesh(new THREE.SphereGeometry(.07, 12, 12), mat(0xffd166, .4, 1));
-knob.position.set(.74, .75, .1);
-doorGroup.add(knob);
-doorGroup.position.set(-.45, 0, 1.52);
-house.add(doorGroup);
-let doorOpen = false, doorRot = 0;
+doorGroup.position.set(-1.2, 1.05, 2.201);
+villa.add(doorGroup);
+const doorMat = new THREE.MeshStandardMaterial({color:0x1d5f8a, roughness:.45, metalness:.15});
+const door = new THREE.Mesh(new THREE.BoxGeometry(1.05, 2.1, .1), doorMat);
+door.position.set(0, 1.05, 0); door.castShadow=true; doorGroup.add(door);
+// 拱门头
+const arch = new THREE.Mesh(new THREE.CylinderGeometry(.52, .52, .1, 16, 1, false, Math.PI, Math.PI), doorMat);
+arch.position.set(0, 2.15, 0); arch.castShadow=true; doorGroup.add(arch);
+// 门框
+const frameMat = new THREE.MeshStandardMaterial({color:0xf6f0e6, roughness:.5});
+const fr1 = new THREE.Mesh(new THREE.BoxGeometry(.16, 2.3, .16), frameMat); fr1.position.set(-.6, 1.15, 0); doorGroup.add(fr1);
+const fr2 = new THREE.Mesh(new THREE.BoxGeometry(.16, 2.3, .16), frameMat); fr2.position.set(.6, 1.15, 0); doorGroup.add(fr2);
+const fr3 = new THREE.Mesh(new THREE.BoxGeometry(1.4, .16, .16), frameMat); fr3.position.set(0, 2.35, 0); doorGroup.add(fr3);
+// 门把手
+const knob = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8), new THREE.MeshStandardMaterial({color:0xd8b25a, metalness:.7, roughness:.3}));
+knob.position.set(.36, 1.05, .08); doorGroup.add(knob);
+// 门牌
+const plate = new THREE.Mesh(new THREE.BoxGeometry(.5, .22, .05), new THREE.MeshStandardMaterial({color:0x5a4632, roughness:.7}));
+plate.position.set(0, .55, .08); doorGroup.add(plate);
+// 门牌文字（canvas 纹理）
+const pCanvas=document.createElement('canvas'); pCanvas.width=128; pCanvas.height=56;
+const pctx=pCanvas.getContext('2d');
+pctx.fillStyle='#8a6a3a'; pctx.fillRect(0,0,128,56);
+pctx.fillStyle='#f3ecdf'; pctx.font='bold 30px serif'; pctx.textAlign='center'; pctx.textBaseline='middle';
+pctx.fillText('Villa', 64, 30);
+const pTex=new THREE.CanvasTexture(pCanvas);
+plate.material = new THREE.MeshStandardMaterial({map:pTex, roughness:.7});
+doorGroup.add(plate);
+// 门阶
+const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, .22, .8), stoneMat); step1.position.set(-1.2, .11, 2.65); villa.add(step1);
+const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, .18, .8), stoneMat); step2.position.set(-1.2, -.04, 3.35); villa.add(step2);
+doorGroup.userData.baseRot = 0;
+let doorOpen = 0;
 
-// 窗户
-const winMat = mat(0xffc94d, .3, .1, 0xffb52e, 1.2);
-const winFrame = mat(0x9cc3e8, .85);
-const barMat = mat(0xfdf6e3, .9);
-const winGlasses = [];
-function addWindow(x, z) {
-  const frame = new THREE.Mesh(new THREE.BoxGeometry(.95, .8, .1), winFrame);
-  frame.position.set(x, 1.35, z);
-  frame.castShadow = frame.receiveShadow = true;
-  house.add(frame);
-  const glass = new THREE.Mesh(new THREE.BoxGeometry(.8, .65, .06), winMat);
-  glass.position.set(x, 1.35, z * 1.001);
-  glass.castShadow = true;
-  house.add(glass);
-  winGlasses.push(glass);
-  const vb = new THREE.Mesh(new THREE.BoxGeometry(.8, .07, .07), barMat);
-  vb.position.set(x, 1.35, z * 1.03);
-  house.add(vb);
-  const hb = new THREE.Mesh(new THREE.BoxGeometry(.07, .65, .07), barMat);
-  hb.position.set(x, 1.35, z * 1.03);
-  house.add(hb);
-}
-addWindow(-0.85, 1.5);
-addWindow(0.85, 1.5);
-let winFlash = 0;
-
-// ================= 门牌「熊的小屋」 =================
-function roundRectPath(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
-}
-
-const signCanvas = document.createElement('canvas');
-signCanvas.width = 1024; signCanvas.height = 360;
-{
-  const sctx = signCanvas.getContext('2d');
-  roundRectPath(sctx, 8, 8, 1008, 344, 34);
-  sctx.fillStyle = '#7a4a24'; sctx.fill();
-  roundRectPath(sctx, 28, 28, 968, 304, 26);
-  sctx.fillStyle = '#8a5a2b'; sctx.fill();
-  sctx.fillStyle = '#ffe9c8'; sctx.textAlign = 'center'; sctx.textBaseline = 'middle';
-  sctx.font = 'bold 190px "Microsoft YaHei", "PingFang SC", sans-serif';
-  sctx.fillText('熊的小屋', 512, 180);
-}
-const signTex = new THREE.CanvasTexture(signCanvas);
-signTex.colorSpace = THREE.SRGBColorSpace;
-signTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-const sign = new THREE.Mesh(
-  new THREE.PlaneGeometry(1.9, .67),
-  new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide })
-);
-sign.position.set(0, 2.0, 1.55);
-house.add(sign);
-
-scene.add(house);
-
-// ================= 眼镜小熊 =================
-const bear = new THREE.Group();
-const furMat = mat(0x9c6b4d, .9);
-const furDarkMat = mat(0x7c5238, .9);
-const muzzleMat = mat(0xd9b28c, .9);
-
-// 身体（可坐下：bearBody 含身体+腿）
-const bearBody = new THREE.Group();
-const body = new THREE.Mesh(new THREE.SphereGeometry(.42, 16, 12), furMat);
-body.scale.set(1, 1.15, .88);
-body.position.y = .45;
-body.castShadow = body.receiveShadow = true;
-bearBody.add(body);
-for (const x of [-.17, .17]) {
-  const leg = new THREE.Mesh(new THREE.CylinderGeometry(.11, .13, .26, 10), furMat);
-  leg.position.set(x, .14, .06);
-  leg.castShadow = true;
-  bearBody.add(leg);
-  const foot = new THREE.Mesh(new THREE.SphereGeometry(.12, 10, 8), furDarkMat);
-  foot.position.set(x, .04, .08);
-  foot.scale.set(1, .6, 1.3);
-  bearBody.add(foot);
-}
-bear.add(bearBody);
-
-// 手臂
-const armL = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, .34, 10), furMat);
-armL.position.set(-.43, .58, 0);
-armL.rotation.z = .15;
-armL.castShadow = true;
-bear.add(armL);
-const armR = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, .34, 10), furMat);
-armR.position.set(.43, .58, 0);
-armR.rotation.z = -.15;
-armR.castShadow = true;
-bear.add(armR);
-
-// 头
-const head = new THREE.Mesh(new THREE.SphereGeometry(.3, 16, 12), furMat);
-head.position.y = .98;
-head.castShadow = true;
-bear.add(head);
-
-// 耳朵
-for (const x of [-.2, .2]) {
-  const ear = new THREE.Mesh(new THREE.SphereGeometry(.1, 10, 8), furMat);
-  ear.position.set(x, 1.24, 0);
-  bear.add(ear);
-  const inner = new THREE.Mesh(new THREE.SphereGeometry(.06, 8, 6), muzzleMat);
-  inner.position.set(x, 1.26, .04);
-  bear.add(inner);
-}
-
-// 口鼻 + 嘴（说话会动）
-const snout = new THREE.Mesh(new THREE.SphereGeometry(.16, 12, 10), muzzleMat);
-snout.scale.set(1, .75, .9);
-snout.position.set(0, .94, .26);
-bear.add(snout);
-const nose = new THREE.Mesh(new THREE.SphereGeometry(.045, 8, 6), mat(0x2b1a10, .6));
-nose.position.set(0, .97, .4);
-bear.add(nose);
-const mouth = new THREE.Mesh(new THREE.BoxGeometry(.085, .028, .02), mat(0x2b1a10, .6));
-mouth.position.set(0, .885, .355);
-bear.add(mouth);
-
-// 眼睛
-for (const x of [-.115, .115]) {
-  const eye = new THREE.Mesh(new THREE.SphereGeometry(.035, 8, 6), mat(0x1c120c, .4));
-  eye.position.set(x, 1.045, .27);
-  bear.add(eye);
-}
-
-// 眼镜
-const glassMat = mat(0x2e2a26, .3, .7);
-for (const x of [-.115, .115]) {
-  const lens = new THREE.Mesh(new THREE.TorusGeometry(.085, .02, 8, 20), glassMat);
-  lens.position.set(x, 1.045, .31);
-  bear.add(lens);
-}
-const bridge = new THREE.Mesh(new THREE.BoxGeometry(.12, .035, .035), glassMat);
-bridge.position.set(0, 1.045, .33);
-bear.add(bridge);
-for (const x of [-.17, .17]) {
-  const armSide = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, .2), glassMat);
-  armSide.position.set(x, 1.1, .16);
-  armSide.rotation.x = .12;
-  bear.add(armSide);
-}
-
-bear.position.set(1.75, 0, 2.15);
-scene.add(bear);
-
-// ================= 台词气泡（可换台词 + 打字机效果）=================
-const LINES = [
-  '没有回答你任何问题的义务',
-  '哼，太阳晒得我眼睛疼',
-  '别看我戴眼镜，我视力好着呢',
-  '饼干吃完了，你带点来',
-  '再烦我，我就去海里游泳了',
-  '你礼貌一点，我还能考虑理你'
-];
-let lineIdx = 0, typeT = 0, typing = true;
-
-const bubCanvas = document.createElement('canvas');
-bubCanvas.width = 640; bubCanvas.height = 420;
-const bctx = bubCanvas.getContext('2d');
-const bubTex = new THREE.CanvasTexture(bubCanvas);
-bubTex.colorSpace = THREE.SRGBColorSpace;
-bubTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
-function drawBubble(text) {
-  bctx.clearRect(0, 0, 640, 420);
-  bctx.save();
-  bctx.shadowColor = 'rgba(0,0,0,.22)'; bctx.shadowBlur = 22; bctx.shadowOffsetY = 6;
-  roundRectPath(bctx, 12, 12, 616, 396, 44);
-  bctx.fillStyle = '#ffffff'; bctx.fill();
-  bctx.restore();
-  roundRectPath(bctx, 12, 12, 616, 396, 44);
-  bctx.strokeStyle = '#3a3a3a'; bctx.lineWidth = 8; bctx.stroke();
-  bctx.fillStyle = '#2b2b2b'; bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
-  bctx.font = 'bold 80px "Microsoft YaHei", "PingFang SC", sans-serif';
-  // 按宽度换行
-  const lines = [];
-  let cur = '';
-  for (const ch of text) {
-    if (bctx.measureText(cur + ch).width > 560) { lines.push(cur); cur = ch; }
-    else cur += ch;
-  }
-  if (cur) lines.push(cur);
-  const lh = 96;
-  const startY = (420 - lines.length * lh) / 2 + 58;
-  lines.forEach((ln, i) => bctx.fillText(ln, 320, startY + i * lh));
-  bubTex.needsUpdate = true;
-}
-drawBubble(LINES[0]);
-
-const bubble = new THREE.Group();
-const bubMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(1.5, .985),
-  new THREE.MeshBasicMaterial({ map: bubTex, transparent: true })
-);
-bubble.add(bubMesh);
-
-const tailGeo = new THREE.BufferGeometry();
-tailGeo.setAttribute('position', new THREE.Float32BufferAttribute([
-  -0.24, -0.48, 0.02, 0.22, -0.48, 0.02, -0.04, -0.74, 0.02
-], 3));
-tailGeo.setIndex([0, 1, 2]);
-tailGeo.computeVertexNormals();
-const tail = new THREE.Mesh(tailGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
-bubble.add(tail);
-
-bubble.position.set(1.75, 2.05, 2.4);
-scene.add(bubble);
-
-function nextLine() {
-  lineIdx = (lineIdx + 1) % LINES.length;
-  typeT = 0; typing = true;
-  // 随机一个小动作
-  const acts = ['wave', 'nod', 'sit', 'spin'];
-  gesture = { type: acts[Math.floor(Math.random() * acts.length)], t0: performance.now() / 1000, dur: 1.4 };
-}
-let gesture = null;
-
-// ================= 棕榈树 =================
-function addPalm(x, z, s) {
+// 窗户（可点击亮灯）
+function mkWindow(x, y, z, ry, w, h){
   const g = new THREE.Group();
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.08 * s, .13 * s, 1.5 * s, 8), mat(0x9c7a4a, 1));
-  trunk.position.y = .75 * s;
-  trunk.rotation.z = .14; trunk.rotation.x = -.06;
-  trunk.castShadow = true;
-  g.add(trunk);
-  const top = new THREE.Group();
-  top.position.set(.06, 1.5 * s, -.04);
-  const leafMat = mat(0x3f9b4f, .8);
-  for (let i = 0; i < 7; i++) {
-    const leaf = new THREE.Mesh(new THREE.ConeGeometry(.34 * s, 1.15 * s, 4), leafMat);
-    leaf.scale.set(1, 1, .16);
-    const a = i / 7 * Math.PI * 2;
-    leaf.position.set(Math.cos(a) * .22 * s, .05, Math.sin(a) * .22 * s);
-    leaf.rotation.y = a;
-    leaf.rotation.x = .42;
-    top.add(leaf);
+  g.position.set(x, y, z); g.rotation.y = ry; g.userData.flash = 0;
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(w+.16, h+.16, .12), frameMat);
+  frame.position.set(0, 0, .04); frame.castShadow=true; g.add(frame);
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(w, h, .06), new THREE.MeshStandardMaterial({color:0x2a3b4a, roughness:.3, metalness:.2, emissive:0x2a3b4a, emissiveIntensity:.5}));
+  glass.position.set(0, 0, .09); g.add(glass);
+  // 百叶
+  const louverMat = new THREE.MeshStandardMaterial({color:0x2a6f97, roughness:.6});
+  const n = 5;
+  for(let i=0;i<n;i++){
+    const sl = new THREE.Mesh(new THREE.BoxGeometry(w*.86, .05, .04), louverMat);
+    sl.position.set(0, (i-(n-1)/2)*(h*.13), .06);
+    sl.rotation.x = -.35; g.add(sl);
   }
-  const coco = new THREE.Mesh(new THREE.SphereGeometry(.08 * s, 8, 6), mat(0x6b4a2b, .9));
-  coco.position.set(.12, .12, 0);
-  top.add(coco);
-  g.add(top);
-  g.position.set(x, 0, z);
-  scene.add(g);
+  // 窗台
+  const sill = new THREE.Mesh(new THREE.BoxGeometry(w+.3, .08, .3), stoneMat);
+  sill.position.set(0, -h/2-.08, .1); g.add(sill);
+  villa.add(g);
+  return g;
 }
-addPalm(-3.6, 1.8, 1.3);
-addPalm(3.7, 1.4, 1.05);
-addPalm(-3.9, -2.4, .9);
-addPalm(3.9, -2.9, 1.15);
+const winMain1 = mkWindow(-2.3, 2.7, 2.2, 0, .8, 1.0);
+const winMain2 = mkWindow(1.1, 2.7, 2.2, 0, .8, 1.0);
+const winTower = mkWindow(-2.7, 2.2, 2.55, 0, .6, .8);
+const winWing  = mkWindow(3.95, 2.4, .0, Math.PI/2, .7, .9);
 
-// ================= 沙滩伞 + 毛巾 =================
-const towel = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.1), mat(0xf6ead2, .95));
-towel.rotation.x = -Math.PI / 2; towel.position.set(-2.6, .01, 3.1);
-towel.receiveShadow = true;
-scene.add(towel);
-const pillow = new THREE.Mesh(new THREE.BoxGeometry(.45, .18, .28), mat(0xe8a0a0, .9));
-pillow.position.set(-3.05, .1, 3.05);
-pillow.rotation.z = .2;
-pillow.castShadow = true;
-scene.add(pillow);
+// 露台（悬挑板 + 铁艺栏杆）
+const deck = new THREE.Mesh(new THREE.BoxGeometry(3.2, .16, 4.6), woodMat);
+deck.position.set(3.9, 2.9, 0); deck.castShadow=deck.receiveShadow=true; villa.add(deck);
+const railMat = new THREE.MeshStandardMaterial({color:0x3a4a4a, roughness:.6, metalness:.5});
+for(let i=0;i<7;i++){
+  const r = new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1.1), railMat);
+  r.position.set(3.9, 3.5, -1.9+i*.63); r.castShadow=true; villa.add(r);
+}
+const railTop = new THREE.Mesh(new THREE.BoxGeometry(3.2, .06, .06), railMat);
+railTop.position.set(3.9, 4.02, -1.9); villa.add(railTop);
+const railTop2 = new THREE.Mesh(new THREE.BoxGeometry(3.2, .06, .06), railMat);
+railTop2.position.set(3.9, 4.02, 1.9); villa.add(railTop2);
 
-const ucCanvas = document.createElement('canvas');
-ucCanvas.width = 256; ucCanvas.height = 256;
-{
-  const uctx = ucCanvas.getContext('2d');
-  for (let x = 0; x < 256; x += 32) {
-    uctx.fillStyle = (x / 32) % 2 === 0 ? '#e05a4e' : '#f6e7d3';
-    uctx.fillRect(x, 0, 32, 256);
+// 露台家具：藤椅 + 圆桌 + 柠檬树
+function mkChair(x, z, ry){
+  const g=new THREE.Group(); g.position.set(x, 2.98, z); g.rotation.y=ry;
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(.9,.12,.72), woodMat); seat.position.y=.06; g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(.9,.6,.06), woodMat); back.position.set(0,.42,-.33); g.add(back);
+  for(let i=0;i<4;i++){
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.5), woodMat);
+    leg.position.set(i<2?-.4:.4, -.16, i%2===0?-.3:.3); g.add(leg);
   }
+  return g;
 }
-const ucTex = new THREE.CanvasTexture(ucCanvas);
-ucTex.colorSpace = THREE.SRGBColorSpace;
-const umbrella = new THREE.Group();
-const pole = new THREE.Mesh(new THREE.CylinderGeometry(.04, .05, 1.35, 8), mat(0xcfcfcf, .5, .4));
-pole.position.y = .68;
-umbrella.add(pole);
-const canopy = new THREE.Mesh(
-  new THREE.ConeGeometry(.85, .5, 24),
-  new THREE.MeshStandardMaterial({ map: ucTex, roughness: .7 })
-);
-canopy.position.y = 1.5;
-canopy.castShadow = true;
-umbrella.add(canopy);
-umbrella.position.set(-2.6, 0, 3.1);
-scene.add(umbrella);
+villa.add(mkChair(3.4, -.9, .4));
+villa.add(mkChair(4.5, -.9, -.4));
+const ttable = new THREE.Mesh(new THREE.CylinderGeometry(.34, .4, .06, 12), woodMat);
+ttable.position.set(3.95, 2.96, -1.1); villa.add(ttable);
+const lemMat = new THREE.MeshStandardMaterial({color:0x8aa94c, roughness:.9});
+const lemTrunk = new THREE.Mesh(new THREE.CylinderGeometry(.06, .09, .5), woodMat);
+lemTrunk.position.set(4.4, 3.15, -.4); villa.add(lemTrunk);
+const lemCrown = new THREE.Mesh(new THREE.IcosahedronGeometry(.45, 0), lemMat);
+lemCrown.position.set(4.4, 3.55, -.4); villa.add(lemCrown);
+for(let i=0;i<6;i++){
+  const lem = new THREE.Mesh(new THREE.SphereGeometry(.055, 8, 6), new THREE.MeshStandardMaterial({color:0xf2d84a, roughness:.4}));
+  const a=i/6*Math.PI*2;
+  lem.position.set(4.4+Math.cos(a)*.3, 3.45+Math.sin(i*1.7)*.12, -.4+Math.sin(a)*.3);
+  villa.add(lem);
+}
+const pot = new THREE.Mesh(new THREE.CylinderGeometry(.16, .2, .34, 10), new THREE.MeshStandardMaterial({color:0xb56a3a, roughness:.8}));
+pot.position.set(4.4, 2.8, -.4); villa.add(pot);
 
-// ================= 石头 & 贝壳 =================
-function addRock(x, z, s) {
-  const r = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), mat(0x9aa0a8, 1));
-  r.position.set(x, s * .5, z);
-  r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
-  r.castShadow = r.receiveShadow = true;
-  scene.add(r);
+// 晾晒床单（地中海度假感，可点击的布面微摆）
+const sheets = new THREE.Group();
+for(let i=0;i<3;i++){
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1, 8, 6),
+    new THREE.MeshStandardMaterial({color:0xfaf6ec, roughness:.9, side:THREE.DoubleSide}));
+  sheet.position.set(1.7, 2.9, -3.2); sheet.rotation.y = .12;
+  sheet.userData.phase = i*2.1; sheets.add(sheet);
 }
-addRock(-1.6, 2.6, .18);
-addRock(1.9, 2.9, .13);
-addRock(2.8, 2.1, .16);
-function addShell(x, z, s) {
-  const sh = new THREE.Mesh(new THREE.ConeGeometry(s, s * .6, 12), mat(0xfff3e2, .8));
-  sh.position.set(x, s * .18, z);
-  sh.rotation.z = Math.PI;
-  sh.rotation.y = Math.random() * 3;
-  scene.add(sh);
-}
-addShell(-.9, 3.4, .14);
-addShell(1.2, 3.7, .11);
-addShell(.4, 2.8, .12);
+villa.add(sheets);
 
-// ================= 云 =================
-const clouds = [];
-function makeCloud(x, y, z, s) {
-  const cg = new THREE.Group();
-  const cm = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true });
-  const puffs = [[0,0,.5],[-.6,.1,.35],[.6,.08,.4],[-.25,.22,.3],[.3,.2,.3]];
-  for (const [px,py,pz] of puffs) {
-    const puff = new THREE.Mesh(new THREE.SphereGeometry(pz * s, 10, 8), cm);
-    puff.position.set(px * s, py * s, 0);
-    cg.add(puff);
+// 爬墙藤蔓 + 三角梅
+function mkVine(x, z, ry){
+  const g=new THREE.Group(); g.position.set(x, 1.4, z); g.rotation.y=ry;
+  const vineMat=new THREE.MeshStandardMaterial({color:0x3f5a3a, roughness:.9});
+  for(let i=0;i<5;i++){
+    const curve=new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0,0,0), new THREE.Vector3(.15, .8+i*.15, 0),
+      new THREE.Vector3(.05, 1.7+i*.2, .1), new THREE.Vector3(-.1, 2.5+i*.2, 0)
+    ]);
+    const tube=new THREE.Mesh(new THREE.TubeGeometry(curve, 10, .028, 6), vineMat);
+    g.add(tube);
   }
-  cg.position.set(x, y, z);
-  cg.userData.speed = .12 + Math.random() * .15;
-  scene.add(cg);
-  clouds.push(cg);
+  const flowerMat=new THREE.MeshStandardMaterial({color:0xd96c8f, roughness:.8});
+  for(let i=0;i<26;i++){
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.05+.02*Math.random(), 6, 5), flowerMat);
+    b.position.set((Math.random()-.5)*.5, Math.random()*2.6, (Math.random()-.5)*.3);
+    g.add(b);
+  }
+  return g;
 }
-makeCloud(-5, 5.6, -4, 1.2);
-makeCloud(6, 6.4, -2, 1.5);
-makeCloud(1, 7.2, -6, 1.1);
+villa.add(mkVine(-2.1, -1.4, 0));
+villa.add(mkVine(1.4, -1.4, 0));
 
-// ================= 海鸥 =================
-const gulls = [];
-const gullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .8 });
-function addGull(x, y, z) {
+// 陶罐
+function mkPot(x, y, z, s, col){
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(.08, 8, 6), gullMat);
-  g.add(body);
-  const wingGeo = new THREE.PlaneGeometry(.34, .09);
-  const lw = new THREE.Mesh(wingGeo, gullMat);
-  lw.position.set(-.18, 0, 0); lw.rotation.z = .2;
-  const rw = new THREE.Mesh(wingGeo, gullMat);
-  rw.position.set(.18, 0, 0); rw.rotation.z = -.2;
-  g.add(lw); g.add(rw);
-  g.userData = { lw, rw, speed: 1.4 + Math.random() * 1, seed: Math.random() * 10 };
-  g.position.set(x, y, z);
-  scene.add(g);
-  gulls.push(g);
+  const body = new THREE.Mesh(new THREE.LatheGeometry([
+    new THREE.Vector2(.18,0), new THREE.Vector2(.3,.05), new THREE.Vector2(.34,.14),
+    new THREE.Vector2(.3,.3), new THREE.Vector2(.2,.38), new THREE.Vector2(.12,.42)
+  ], 12), new THREE.MeshStandardMaterial({color:col, roughness:.8}));
+  body.scale.set(s,s,s); g.add(body);
+  g.position.set(x, y+.42*s, z); villa.add(g);
+  return g;
 }
-addGull(-6, 5.2, -3);
-addGull(4, 6.1, -1);
+mkPot(4.6, 2.9, 1.2, 1, 0xa8573a);
+mkPot(-3.4, 1.9, -1.4, 1.15, 0xb56a3a);
+mkPot(1.9, 3.2, 2.4, .8, 0x9a5a4a);
 
-// ================= 声音（海浪 + 轻音乐，纯本地合成）=================
-let audioCtx = null, audioOn = false, masterGain = null;
-const btnSound = document.getElementById('btnSound');
-function ensureAudio() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    audioCtx = new AC();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0;
-    masterGain.connect(audioCtx.destination);
+// 石阶下坡
+for(let i=0;i<4;i++){
+  const st = new THREE.Mesh(new THREE.BoxGeometry(2.4, .2, .9), stoneMat);
+  st.position.set(-1.2, 2.9-i*.22, 4.2+i*.75); st.castShadow=st.receiveShadow=true; villa.add(st);
+}
+// 院前矮石墙
+for(let i=0;i<5;i++){
+  const w = new THREE.Mesh(new THREE.BoxGeometry(2.6, .7, .4), stoneMat);
+  w.position.set(.5, 3.2, 4.7+i*.5); w.castShadow=w.receiveShadow=true; villa.add(w);
+}
 
-    // 海浪：低频噪声 + 缓慢起伏
-    const len = audioCtx.sampleRate * 4;
-    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
-    const data = buf.getChannelData(0);
-    let last = 0;
-    for (let i = 0; i < len; i++) {
-      last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
-      data[i] = last * 3.5;
-    }
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf; src.loop = true;
-    const lp = audioCtx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 420;
-    const g = audioCtx.createGain(); g.gain.value = .5;
-    const lfo = audioCtx.createOscillator(); lfo.frequency.value = .07;
-    const lfoG = audioCtx.createGain(); lfoG.gain.value = .22;
-    lfo.connect(lfoG); lfoG.connect(g.gain);
-    src.connect(lp); lp.connect(g); g.connect(masterGain);
-    src.start(); lfo.start();
-
-    // 轻音乐（八音盒式旋律循环）
-    const seq = [523.25, 587.33, 659.25, 523.25, 783.99, 880.00, 783.99, 659.25,
-                 587.33, 659.25, 523.25, 440.00, 392.00, 440.00, 523.25, 587.33];
-    let nextT = audioCtx.currentTime + .2, idx = 0, step = .42;
-    function playNote(f, t) {
-      const osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.value = f;
-      const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = f * 2;
-      const g2 = audioCtx.createGain();
-      g2.gain.setValueAtTime(0, t);
-      g2.gain.linearRampToValueAtTime(.13, t + .03);
-      g2.gain.exponentialRampToValueAtTime(.0001, t + .8);
-      const g3 = audioCtx.createGain();
-      g3.gain.setValueAtTime(0, t);
-      g3.gain.linearRampToValueAtTime(.03, t + .02);
-      g3.gain.exponentialRampToValueAtTime(.0001, t + .5);
-      osc.connect(g2); osc2.connect(g3);
-      g2.connect(masterGain); g3.connect(masterGain);
-      osc.start(t); osc.stop(t + .85);
-      osc2.start(t); osc2.stop(t + .55);
-    }
-    setInterval(() => {
-      while (nextT < audioCtx.currentTime + .6) {
-        playNote(seq[idx % seq.length], nextT);
-        nextT += step; idx++;
-      }
-    }, 180);
+// ===== 环境植被 =====
+function mkCypress(x, z, s){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,1.4), woodMat);
+  trunk.position.y=.7; g.add(trunk);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(.5, 2.8, 8), new THREE.MeshStandardMaterial({color:0x3e5a3a, roughness:.9}));
+  cone.position.y=2.4; cone.castShadow=true; g.add(cone);
+  g.position.set(x, 3.2, z); g.scale.set(s,s,s);
+  return g;
+}
+scene.add(mkCypress(7.2, -1.8, 1.15));
+scene.add(mkCypress(8.4, 1.2, 1));
+scene.add(mkCypress(-5.2, -3.4, 1.25));
+function mkOlive(x, z){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.12,.18,1.1, 7), new THREE.MeshStandardMaterial({color:0x6a5238, roughness:.95}));
+  trunk.position.y=.55; trunk.rotation.z=.25; g.add(trunk);
+  const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.75, 0), new THREE.MeshStandardMaterial({color:0x7d8a5a, roughness:.95}));
+  crown.position.set(.25, 1.5, 0); crown.scale.set(1, .7, 1); crown.castShadow=true; g.add(crown);
+  const crown2=new THREE.Mesh(new THREE.IcosahedronGeometry(.55, 0), new THREE.MeshStandardMaterial({color:0x8a945f, roughness:.95}));
+  crown2.position.set(-.3, 1.25, .2); g.add(crown2);
+  g.position.set(x, 3.2, z);
+  return g;
+}
+scene.add(mkOlive(7.8, -3.2));
+scene.add(mkOlive(-6.4, 1.2));
+function mkLavender(x, z, n){
+  const g=new THREE.Group();
+  for(let i=0;i<n;i++){
+    const p=new THREE.Mesh(new THREE.ConeGeometry(.06, .32, 6), new THREE.MeshStandardMaterial({color:0x8f7fd6, roughness:.9}));
+    p.position.set((Math.random()-.5)*1.1, .16, (Math.random()-.5)*.7); g.add(p);
   }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  g.position.set(x, 3.2, z); return g;
 }
-btnSound.addEventListener('pointerdown', e => { e.stopPropagation(); ensureAudio(); toggleSound(); });
-function toggleSound() {
-  audioOn = !audioOn;
-  btnSound.textContent = audioOn ? '🔇 静音' : '🔊 声音';
+scene.add(mkLavender(3.6, 4.4, 9));
+scene.add(mkLavender(6.2, 4.8, 7));
+scene.add(mkLavender(-3.2, 5.0, 6));
+function mkAgave(x, z){
+  const g=new THREE.Group();
+  for(let i=0;i<8;i++){
+    const leaf=new THREE.Mesh(new THREE.ConeGeometry(.07, 1.15, 5), new THREE.MeshStandardMaterial({color:0x5a7a4a, roughness:.9}));
+    const a=i/8*Math.PI*2;
+    leaf.position.set(Math.cos(a)*.28, .45, Math.sin(a)*.28);
+    leaf.rotation.set(Math.sin(a)*.7, 0, -Math.cos(a)*.7);
+    g.add(leaf);
+  }
+  g.position.set(x, 3.2, z); return g;
+}
+scene.add(mkAgave(2.2, 5.4));
+scene.add(mkAgave(-4.6, 4.2));
+
+// ===== 帆船 =====
+const boat = new THREE.Group();
+const boatMat = new THREE.MeshStandardMaterial({color:0xead8b8, roughness:.8});
+const hull = new THREE.Mesh(new THREE.BoxGeometry(.5, .3, 1.6), boatMat);
+hull.position.y=.15; boat.add(hull);
+const mast = new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.9), woodMat);
+mast.position.y=.6; boat.add(mast);
+const sailMat = new THREE.MeshBasicMaterial({color:0xf6efe2, side:THREE.DoubleSide});
+const sail1 = new THREE.Mesh(new THREE.PlaneGeometry(.55, .62), sailMat);
+sail1.position.set(.32, .62, 0); sail1.rotation.y = .5; boat.add(sail1);
+const sail2 = new THREE.Mesh(new THREE.PlaneGeometry(.42, .5), sailMat);
+sail2.position.set(-.3, .55, 0); sail2.rotation.y = -.45; boat.add(sail2);
+boat.position.set(-22, .85, -10);
+boat.userData.head = -1;
+scene.add(boat);
+
+// ===== 海鸥 =====
+function mkGull(){
+  const g=new THREE.Group();
+  const b1=new THREE.Mesh(new THREE.BoxGeometry(.5,.02,.1), new THREE.MeshBasicMaterial({color:0xffffff}));
+  const b2=b1.clone(); b2.rotation.y=Math.PI;
+  g.add(b1); g.add(b2);
+  g.userData.flap=0;
+  return g;
+}
+const gulls=[];
+for(let i=0;i<3;i++){
+  const gu=mkGull();
+  gu.position.set(3+i*4, 8+i*1.5, -4+i*3);
+  scene.add(gu); gulls.push(gu);
 }
 
-// ================= 日夜切换按钮 =================
-const btnMode = document.getElementById('btnMode');
-btnMode.addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  nightMode = !nightMode;
-  btnMode.textContent = nightMode ? '☀️ 白天' : '🌙 夜晚';
-});
-
-// ================= 点击交互（点小熊聊天/点门/点窗户）=================
-const bearMeshes = [], doorMeshes = [], winMeshes = [], bubMeshes = [];
-bear.traverse(c => { if (c.isMesh) bearMeshes.push(c); });
-doorGroup.traverse(c => { if (c.isMesh) doorMeshes.push(c); });
-winGlasses.forEach(m => winMeshes.push(m));
-bubble.traverse(c => { if (c.isMesh) bubMeshes.push(c); });
-const clickable = [...bearMeshes, ...bubMeshes, ...doorMeshes, ...winMeshes];
-
-const ray = new THREE.Raycaster();
-const ndc = new THREE.Vector2();
-renderer.domElement.addEventListener('pointerdown', e => {
+// ===== 交互 =====
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const clickables = [door, arch, doorGroup, winMain1, winMain2, winTower, winWing];
+renderer.domElement.addEventListener('pointerdown', e=>{
   ensureAudio();
-  ndc.x = (e.clientX / innerWidth) * 2 - 1;
-  ndc.y = -(e.clientY / innerHeight) * 2 + 1;
-  ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects(clickable, false);
-  if (hits.length) {
-    const hit = hits[0].object;
-    if (bearMeshes.includes(hit) || bubMeshes.includes(hit)) nextLine();
-    else if (doorMeshes.includes(hit)) { doorOpen = !doorOpen; }
-    else if (winMeshes.includes(hit)) winFlash = 1;
+  pointer.x = (e.clientX/innerWidth)*2-1;
+  pointer.y = -(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(clickables, true);
+  if(hit.length){
+    let obj = hit[0].object;
+    while(obj && !obj.userData && obj.parent) obj = obj.parent;
+    if(obj === door || obj === arch || obj === doorGroup) doorOpen = doorOpen>0 ? 0 : 1;
+    else obj.userData.flash = 1;
   }
 });
 
-// ================= 动画循环 =================
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  const dt = Math.min(clock.getDelta(), .1);
-
-  controls.update();
-
-  // 日夜渐变
-  const k = dayFactor; // 1=白天
-  for (const key in C) CUR[key].lerpColors(C[key].night, C[key].day, k);
-  sky.material.uniforms.topColor.value.copy(CUR.skyTop);
-  sky.material.uniforms.horizonColor.value.copy(CUR.skyHorizon);
-  sky.material.uniforms.warmColor.value.copy(CUR.skyWarm);
-  scene.fog.color.copy(CUR.fog);
-  sun.color.copy(CUR.sunCol);
-  sun.intensity = 1.7 * k + .35 * (1 - k);
-  hemi.color.copy(CUR.hemiCol);
-  hemi.intensity = .85 * k + .3 * (1 - k);
-  amb.intensity = .22 * k + .08 * (1 - k);
-  sand.material.color.copy(CUR.sand);
-  deck.material.color.copy(CUR.deck);
-  ocean.material.uniforms.uDeep.value.copy(CUR.oceanDeep);
-  ocean.material.uniforms.uShallow.value.copy(CUR.oceanShallow);
-  ocean.material.uniforms.uSunset.value.copy(CUR.oceanSunset);
-  ocean.material.uniforms.uNight.value = 1 - k;
-  ocean.material.uniforms.uCamPos.value.copy(camera.position);
-  starsMat.opacity = 1 - k;
-  moonMat.opacity = 1 - k;
-  sunMesh.material.opacity = k;
-  sunGlow.material.opacity = .75 * k;
-
-  // 海浪时间
-  ocean.material.uniforms.uTime.value = t;
-
-  // 窗户灯光（呼吸 + 夜晚更亮 + 点击闪光）
-  const nightBoost = 2.2 * (1 - k);
-  winMat.emissiveIntensity = (1.1 + nightBoost) + Math.sin(t * 1.5) * .35 * (1 + (1 - k) * 1.4) + winFlash * 2.2;
-  winFlash = Math.max(0, winFlash - dt * 2.5);
-
-  // 门开关动画
-  const doorTarget = doorOpen ? -1.5 : 0;
-  doorRot += (doorTarget - doorRot) * Math.min(1, dt * 4);
-  doorGroup.rotation.y = doorRot;
-
-  // 台词打字机
-  if (typing) {
-    typeT += dt;
-    const full = LINES[lineIdx];
-    const n = Math.floor(typeT / .055);
-    if (n >= full.length) { typing = false; drawBubble(full); }
-    else drawBubble(full.slice(0, n));
+// ===== 声音（海浪 + 海风风铃）=====
+let audioCtx=null, masterGain=null, soundOn=false;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0; masterGain.connect(audioCtx.destination);
+    // 海浪：低频噪声 + 低通 + LFO 起伏
+    const len=audioCtx.sampleRate*4, buf=audioCtx.createBuffer(1, len, audioCtx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){ const t=i/audioCtx.sampleRate; d[i]=(Math.random()*2-1)*(.25+.75*Math.abs(Math.sin(t*.5))); }
+    const src=audioCtx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const lp=audioCtx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=380;
+    const lfo=audioCtx.createOscillator(); lfo.frequency.value=.08;
+    const lfoG=audioCtx.createGain(); lfoG.gain.value=.18;
+    lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+    src.connect(lp); lp.connect(masterGain); src.start();
+    // 风铃：随机高音 ping
+    scheduleBells();
   }
+  audioCtx.resume();
+}
+function scheduleBells(){
+  if(!soundOn) return;
+  const now=audioCtx.currentTime;
+  const t=now+Math.random()*4+2;
+  const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+  osc.type='sine'; osc.frequency.value=1200+Math.random()*900;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.05,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+2.5);
+  osc.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t+3);
+  setTimeout(scheduleBells, (t-now)*1000);
+}
+const btnMode=document.getElementById('btnMode');
+const btnSound=document.getElementById('btnSound');
+let nightMode=false;
+let kCurrent = 1;
+btnMode.addEventListener('click', ()=>{ nightMode=!nightMode; btnMode.textContent=nightMode?'☾ 日夜':'☀ 日夜'; });
+btnSound.addEventListener('click', ()=>{
+  soundOn=!soundOn;
+  if(soundOn){ ensureAudio(); masterGain.gain.linearRampToValueAtTime(.5, audioCtx.currentTime+1.2); }
+  else if(masterGain) masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime+.6);
+  btnSound.textContent=soundOn?'♪ 声音':'♩ 声音';
+});
 
-  // 小熊动作
-  bear.position.y = Math.sin(t * 2) * .015;
-  mouth.scale.x = typing ? .5 + .9 * Math.abs(Math.sin(t * 13)) : .75;
-  if (gesture) {
-    const el = t - gesture.t0;
-    if (el > gesture.dur) { gesture = null; armL.rotation.z = .15; armR.rotation.z = -.15; head.rotation.x = 0; bearBody.position.y = 0; }
-    else {
-      const ease = 1 - el / gesture.dur;
-      if (gesture.type === 'wave') {
-        armR.rotation.z = -.15 - Math.sin(el * 10) * .75 * ease;
-        armL.rotation.z = .15 + Math.sin(el * 10 + .8) * .3 * ease;
-      } else if (gesture.type === 'nod') {
-        head.rotation.x = Math.sin(el * 5) * .28 * ease;
-      } else if (gesture.type === 'sit') {
-        bearBody.position.y = -.16 * Math.sin(Math.PI * Math.min(el / gesture.dur, 1));
-      } else if (gesture.type === 'spin') {
-        bear.rotation.y += dt * 3.2;
-      }
+// ===== 动画循环 =====
+const clock=new THREE.Clock();
+function animate(){
+  const dt=Math.min(clock.getDelta(), .05);
+  const t=clock.elapsedTime;
+  // 日夜渐变（k=白天程度，nightMode=false 白天→k=1；nightMode=true 夜晚→k=0，缓动过渡）
+  const kTarget = nightMode ? 0 : 1;
+  kCurrent += (kTarget - kCurrent) * Math.min(1, dt * 2.2);
+  const k = kCurrent;
+  lerp(k);
+  scene.fog.color.copy(C.fog.cur);
+  skyMat.uniforms.top.value.copy(C.skyTop.cur);
+  skyMat.uniforms.hor.value.copy(C.skyHor.cur);
+  skyMat.uniforms.warm.value.copy(C.skyWarm.cur);
+  sunBall.material.color.copy(C.sunCol.cur); sunBall.material.transparent=true; sunBall.material.opacity=k;
+  glow.material.opacity=k*.85;
+  moon.material.opacity=1-k; moon.material.transparent=true;
+  stars.material.opacity=(1-k)*.9;
+  hemi.color.copy(C.hemi.cur); sun.color.copy(C.sunCol.cur); amb.color.copy(C.amb.cur);
+  sun.intensity = 1.2+1.4*k;
+  hemi.intensity = .35+.7*k;
+  oceanMat.uniforms.uDeep.value.copy(C.oDeep.cur);
+  oceanMat.uniforms.uShal.value.copy(C.oShal.cur);
+  oceanMat.uniforms.uSun.value.copy(C.oSun.cur);
+  oceanMat.uniforms.uNight.value = 1-k;
+  oceanMat.uniforms.uCam.value.copy(camera.position);
+  rockMat.color.copy(C.rock.cur); sand.material.color.copy(C.sand.cur);
+  wallMat.color.copy(C.wall.cur); wallShadow.color.copy(C.wall.cur).multiplyScalar(.86);
+  roofMat.color.copy(C.roof.cur); tileMat.color.copy(C.tile.cur); woodMat.color.copy(C.wood.cur);
+
+  // 云
+  clouds.forEach(c=>{ c.position.x += c.userData.speed*60*dt; if(c.position.x>70) c.position.x=-70; });
+
+  // 门开关
+  const target = doorOpen>0 ? -1.5 : 0;
+  doorGroup.userData.baseRot += (target-doorGroup.userData.baseRot)*Math.min(1, dt*3.5);
+  doorGroup.rotation.y = doorGroup.userData.baseRot;
+
+  // 窗闪光 + 夜间窗灯
+  [winMain1, winMain2, winTower, winWing].forEach(w=>{
+    const g=w.children.find(c=>c.geometry.type==='BoxGeometry' && c.material.emissive && c.material.emissive.getHex() !== 0);
+    if(g){
+      g.material.emissiveIntensity = .5 + (1-k)*1.4 + (w.userData.flash>0 ? w.userData.flash*3 : 0);
+      w.userData.flash = Math.max(0, w.userData.flash - dt*1.6);
     }
-  }
+  });
 
-  // 气泡对准相机 + 浮动
-  bubble.lookAt(camera.position);
-  bubble.position.y = 2.05 + Math.sin(t * 1.6) * .04;
+  // 床单摆动
+  sheets.children.forEach((s,i)=>{
+    s.rotation.z = Math.sin(t*1.4+s.userData.phase)*.05;
+    s.rotation.x = Math.sin(t*1.1+s.userData.phase*.7)*.03;
+  });
 
-  // 云朵
-  for (const c of clouds) {
-    c.position.x -= dt * c.userData.speed;
-    if (c.position.x < -9) c.position.x = 10;
-  }
+  // 旗
+  flag.rotation.y = Math.sin(t*2.2)*.3; flag.position.x = -2.42 + Math.sin(t*2.2)*.02;
+
+  // 帆船漂移
+  boat.position.x += boat.userData.head*dt*1.1;
+  boat.position.z += Math.sin(t*.3)*dt*.3;
+  if(boat.position.x < -42) boat.userData.head = 1;
+  if(boat.position.x > -10) boat.userData.head = -1;
+  boat.rotation.y = boat.userData.head*.12;
+  sail1.rotation.z = Math.sin(t*.9)*.1;
+  sail2.rotation.z = Math.sin(t*.9+.8)*.1;
 
   // 海鸥
-  for (const g of gulls) {
-    g.position.x += dt * g.userData.speed;
-    g.position.y += Math.sin(t * 1.2 + g.userData.seed) * .004;
-    if (g.position.x > 13) g.position.x = -13;
-    g.userData.lw.rotation.z = .2 + Math.sin(t * 9) * .45;
-    g.userData.rw.rotation.z = -.2 - Math.sin(t * 9) * .45;
-  }
+  gulls.forEach((gu,i)=>{
+    gu.userData.flap += dt*10;
+    const fl = Math.sin(gu.userData.flap)*.55;
+    gu.children[0].rotation.z = fl;
+    gu.children[1].rotation.z = -fl;
+    gu.position.x += Math.sin(t*.4+i*2)*dt*.8;
+    gu.position.y += Math.sin(t*.9+i*1.3)*dt*.5;
+  });
 
-  // 声音淡入淡出
-  if (audioCtx && masterGain) {
-    const target = audioOn ? .5 : 0;
-    masterGain.gain.value += (target - masterGain.gain.value) * Math.min(1, dt * 3);
-  }
-
+  oceanMat.uniforms.uTime.value = t;
+  controls.update();
   renderer.render(scene, camera);
+  requestAnimationFrame(animate);
 }
 animate();
-
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
+addEventListener('resize', ()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
-
-setTimeout(() => {
-  const l = document.getElementById('loader');
-  if (l) { l.style.opacity = '0'; setTimeout(() => l && l.remove(), 700); }
-}, 300);
 </script>
 </body>
 </html>
