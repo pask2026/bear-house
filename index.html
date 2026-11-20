@@ -2531,7 +2531,7 @@ sand.rotation.x = -Math.PI/2; sand.position.set(-2.2, .42, 3.4); sand.receiveSha
 
 // ===== 别墅 =====
 const villa = new THREE.Group();
-villa.position.set(4.5, 3.3, .5);
+villa.position.set(4.5, 3.7, .5);
 scene.add(villa);
 const wallMat = new THREE.MeshStandardMaterial({color:0xf3ecdf, roughness:.7});
 const wallShadow = new THREE.MeshStandardMaterial({color:0xd9cfc0, roughness:.8});
@@ -2548,7 +2548,7 @@ base.position.set(0, .35, 0); base.castShadow=base.receiveShadow=true; villa.add
 const mainWall = new THREE.Mesh(new THREE.BoxGeometry(5.2, 3.4, 4.4), wallMat);
 mainWall.position.set(-.7, 2.35, 0); mainWall.castShadow=mainWall.receiveShadow=true; villa.add(mainWall);
 // 主楼陶土双坡屋顶
-const mainRoof = new THREE.Mesh(new THREE.ConeGeometry(3.6, 1.9, 4), roofMat);
+const mainRoof = new THREE.Mesh(new THREE.ConeGeometry(3.85, 1.9, 4), roofMat);
 mainRoof.position.set(-.7, 4.5, 0); mainRoof.rotation.y = Math.PI/4; mainRoof.castShadow=true; villa.add(mainRoof);
 // 屋脊装饰
 const ridge = new THREE.Mesh(new THREE.BoxGeometry(.18, .12, 4.4), new THREE.MeshStandardMaterial({color:0x8a3a24, roughness:.8}));
@@ -2557,22 +2557,18 @@ ridge.position.set(-.7, 5.42, 0); ridge.rotation.z = .1; villa.add(ridge);
 // 右翼（悬挑露台的体块）
 const wing = new THREE.Mesh(new THREE.BoxGeometry(3.1, 2.2, 3.6), wallMat);
 wing.position.set(2.4, 1.8, 0); wing.castShadow=wing.receiveShadow=true; villa.add(wing);
-// 右翼单坡屋顶
-const wingRoof = new THREE.Mesh(new THREE.BoxGeometry(3.7, .5, 4.2), roofMat);
-wingRoof.position.set(2.4, 3.15, 0); wingRoof.rotation.z = .42; wingRoof.castShadow=true; villa.add(wingRoof);
+// 右翼为露台，deck 兼平顶（单坡屋顶已移除）
 
 // 塔楼（瞭望阁）
 const tower = new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.6, 1.7), wallMat);
 tower.position.set(-2.7, 1.7, 1.7); tower.castShadow=tower.receiveShadow=true; villa.add(tower);
 const towerRoof = new THREE.Mesh(new THREE.ConeGeometry(1.25, 1.1, 4), roofMat);
 towerRoof.position.set(-2.7, 3.55, 1.7); towerRoof.rotation.y = Math.PI/4; towerRoof.castShadow=true; villa.add(towerRoof);
-// 塔楼小平台 + 旗杆 + 旗
-const towerDeck = new THREE.Mesh(new THREE.BoxGeometry(1.9, .12, 1.9), woodMat);
-towerDeck.position.set(-2.7, 3.1, 1.7); villa.add(towerDeck);
-const pole = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 1.5), woodMat);
-pole.position.set(-2.7, 3.9, 1.7); villa.add(pole);
+// 旗杆 + 旗（旗杆立在塔楼锥顶之上）
+const pole = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 1.2), woodMat);
+pole.position.set(-2.7, 4.6, 1.7); villa.add(pole);
 const flag = new THREE.Mesh(new THREE.PlaneGeometry(.9, .5), new THREE.MeshBasicMaterial({color:0x2a6f97, side:THREE.DoubleSide}));
-flag.position.set(-2.42, 4.05, 1.7); villa.add(flag);
+flag.position.set(-2.42, 5.0, 1.7); villa.add(flag);
 
 // 大门（地中海蓝拱门）——可点击
 const doorGroup = new THREE.Group();
@@ -2640,7 +2636,7 @@ plate.material = new THREE.MeshStandardMaterial({map:pTex, roughness:.7});
 doorGroup.add(plate);
 // 门阶
 const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, .22, .8), stoneMat); step1.position.set(-1.2, .11, 2.65); villa.add(step1);
-const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, .18, .8), stoneMat); step2.position.set(-1.2, -.04, 3.35); villa.add(step2);
+const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, .18, .8), stoneMat); step2.position.set(-1.2, .02, 3.35); villa.add(step2);
 doorGroup.userData.baseRot = 0;
 let doorOpen = 0;
 
@@ -2676,6 +2672,11 @@ const winWing  = mkWindow(3.95, 2.4, .0, Math.PI/2, .7, .9);
 // 露台（悬挑板 + 铁艺栏杆）
 const deck = new THREE.Mesh(new THREE.BoxGeometry(3.2, .16, 4.6), woodMat);
 deck.position.set(3.9, 2.9, 0); deck.castShadow=deck.receiveShadow=true; villa.add(deck);
+// 露台悬挑支撑托梁（从右翼墙根斜撑悬挑板）
+for(let i=0;i<3;i++){
+  const joist = new THREE.Mesh(new THREE.BoxGeometry(2.2, .18, .12), woodMat);
+  joist.position.set(4.0, 2.74, -1.5+i*1.5); joist.castShadow=true; villa.add(joist);
+}
 const railMat = new THREE.MeshStandardMaterial({color:0x3a4a4a, roughness:.6, metalness:.5});
 for(let i=0;i<7;i++){
   const r = new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1.1), railMat);
@@ -2689,21 +2690,26 @@ railTop2.position.set(3.9, 4.02, 1.9); villa.add(railTop2);
 // 露台家具：藤椅 + 圆桌 + 柠檬树
 function mkChair(x, z, ry){
   const g=new THREE.Group(); g.position.set(x, 2.98, z); g.rotation.y=ry;
-  const seat=new THREE.Mesh(new THREE.BoxGeometry(.9,.12,.72), woodMat); seat.position.y=.06; g.add(seat);
-  const back=new THREE.Mesh(new THREE.BoxGeometry(.9,.6,.06), woodMat); back.position.set(0,.42,-.33); g.add(back);
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(.9,.12,.72), woodMat); seat.position.y=.24; g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(.9,.6,.06), woodMat); back.position.set(0,.57,-.33); g.add(back);
   for(let i=0;i<4;i++){
-    const leg=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.5), woodMat);
-    leg.position.set(i<2?-.4:.4, -.16, i%2===0?-.3:.3); g.add(leg);
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.3), woodMat);
+    leg.position.set(i<2?-.4:.4, .15, i%2===0?-.3:.3); g.add(leg);
   }
   return g;
 }
 villa.add(mkChair(3.4, -.9, .4));
 villa.add(mkChair(4.5, -.9, -.4));
 const ttable = new THREE.Mesh(new THREE.CylinderGeometry(.34, .4, .06, 12), woodMat);
-ttable.position.set(3.95, 2.96, -1.1); villa.add(ttable);
+ttable.position.set(3.95, 3.4, -1.1); villa.add(ttable);
+for(let i=0;i<3;i++){
+  const tleg = new THREE.Mesh(new THREE.CylinderGeometry(.02, .025, .45, 8), woodMat);
+  const ta = i/3*Math.PI*2;
+  tleg.position.set(3.95+Math.cos(ta)*.26, 3.19, -1.1+Math.sin(ta)*.26); villa.add(tleg);
+}
 const lemMat = new THREE.MeshStandardMaterial({color:0x8aa94c, roughness:.9});
 const lemTrunk = new THREE.Mesh(new THREE.CylinderGeometry(.06, .09, .5), woodMat);
-lemTrunk.position.set(4.4, 3.15, -.4); villa.add(lemTrunk);
+lemTrunk.position.set(4.4, 3.4, -.4); villa.add(lemTrunk);
 const lemCrown = new THREE.Mesh(new THREE.IcosahedronGeometry(.45, 0), lemMat);
 lemCrown.position.set(4.4, 3.55, -.4); villa.add(lemCrown);
 for(let i=0;i<6;i++){
@@ -2713,14 +2719,16 @@ for(let i=0;i<6;i++){
   villa.add(lem);
 }
 const pot = new THREE.Mesh(new THREE.CylinderGeometry(.16, .2, .34, 10), new THREE.MeshStandardMaterial({color:0xb56a3a, roughness:.8}));
-pot.position.set(4.4, 2.8, -.4); villa.add(pot);
+pot.position.set(4.4, 3.15, -.4); villa.add(pot);
 
-// 晾晒床单（地中海度假感，可点击的布面微摆）
+// 晾衣杆 + 晾晒床单（杆一端固定在主楼后墙，地中海度假感，可点击的布面微摆）
+const laundryBar = new THREE.Mesh(new THREE.BoxGeometry(.06, .06, 1.5), woodMat);
+laundryBar.position.set(1.7, 2.6, -2.9); villa.add(laundryBar);
 const sheets = new THREE.Group();
 for(let i=0;i<3;i++){
   const sheet = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1, 8, 6),
     new THREE.MeshStandardMaterial({color:0xfaf6ec, roughness:.9, side:THREE.DoubleSide}));
-  sheet.position.set(1.7, 2.9, -3.2); sheet.rotation.y = .12;
+  sheet.position.set(1.7, 2.05, -2.6-i*.3); sheet.rotation.y = .12;
   sheet.userData.phase = i*2.1; sheets.add(sheet);
 }
 villa.add(sheets);
@@ -2745,8 +2753,8 @@ function mkVine(x, z, ry){
   }
   return g;
 }
-villa.add(mkVine(-2.1, -1.4, 0));
-villa.add(mkVine(1.4, -1.4, 0));
+villa.add(mkVine(-2.1, 2.25, 0));
+villa.add(mkVine(1.4, 2.25, 0));
 
 // 陶罐
 function mkPot(x, y, z, s, col){
@@ -2759,19 +2767,21 @@ function mkPot(x, y, z, s, col){
   g.position.set(x, y+.42*s, z); villa.add(g);
   return g;
 }
-mkPot(4.6, 2.9, 1.2, 1, 0xa8573a);
-mkPot(-3.4, 1.9, -1.4, 1.15, 0xb56a3a);
-mkPot(1.9, 3.2, 2.4, .8, 0x9a5a4a);
+mkPot(4.6, 2.77, 1.2, 1, 0xa8573a);
+mkPot(-3.9, .1585, .6, 1.15, 0xb56a3a);
+mkPot(2.1, .232, 2.4, .8, 0x9a5a4a);
 
-// 石阶下坡
-for(let i=0;i<4;i++){
+// 石阶下坡（从台地顶下到悬崖顶）
+const stepYs = [0, -.2, -.4], stepZs = [4.2, 4.7, 5.2];
+for(let i=0;i<3;i++){
   const st = new THREE.Mesh(new THREE.BoxGeometry(2.4, .2, .9), stoneMat);
-  st.position.set(-1.2, 2.9-i*.22, 4.2+i*.75); st.castShadow=st.receiveShadow=true; villa.add(st);
+  st.position.set(-1.2, stepYs[i], stepZs[i]); st.castShadow=st.receiveShadow=true; villa.add(st);
 }
-// 院前矮石墙
-for(let i=0;i<5;i++){
+// 院前矮石墙（立在台地顶面）
+const wallZs = [4.0, 4.5, 4.9];
+for(let i=0;i<3;i++){
   const w = new THREE.Mesh(new THREE.BoxGeometry(2.6, .7, .4), stoneMat);
-  w.position.set(.5, 3.2, 4.7+i*.5); w.castShadow=w.receiveShadow=true; villa.add(w);
+  w.position.set(.5, .35, wallZs[i]); w.castShadow=w.receiveShadow=true; villa.add(w);
 }
 
 // ===== 环境植被 =====
