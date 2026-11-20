@@ -2578,6 +2578,7 @@ const flag = new THREE.Mesh(new THREE.PlaneGeometry(.9, .5), new THREE.MeshBasic
 flag.position.set(-2.42, 4.05, 1.7); villa.add(flag);
 
 // 大门（地中海蓝拱门）——可点击
+const doorGroup = new THREE.Group();
 // ===== 细节建模：烟囱 / 檐口线 / 腰线 / 门廊柱 / 栏杆 =====
 // 烟囱（穿过主屋顶）+ 烟囱帽
 const chimney = new THREE.Mesh(new THREE.CylinderGeometry(.30, .34, 1.2, 10), new THREE.MeshStandardMaterial({color:0xa86a4a, roughness:.85}));
