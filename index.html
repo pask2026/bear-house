@@ -2342,16 +2342,13 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 app.appendChild(renderer.domElement);
 
-// ===== 增强：环境反射 + 辉光后期（失败自动回退基础渲染）=====
+// ===== 增强：环境反射（失败自动回退基础渲染）=====
 let composer = null;
 try {
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new THREE.RoomEnvironment(), 0.04).texture;
-  composer = new THREE.EffectComposer(renderer);
-  composer.addPass(new THREE.RenderPass(scene, camera));
-  composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.35, 0.6, 0.75));
-  console.log('[enh] 环境反射与辉光后期已启用');
+  console.log('[enh] 环境反射已启用');
 } catch (err) {
-  console.warn('[enh] 后期效果不可用，使用基础渲染:', err);
+  console.warn('[enh] 环境反射不可用，使用基础渲染:', err);
 }
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -2384,7 +2381,7 @@ const C = {
   wood:    {day:new THREE.Color(0x8a5f3a), night:new THREE.Color(0x3a2c22)},
 };
 const CUR = new THREE.Color();
-function lerp(k){ for(const key in C){ const o=C[key]; if(!o.cur) o.cur=new THREE.Color(); CUR.copy(o.night).lerp(o.day, k); o.cur.set(CUR.r, CUR.g, CUR.b); } }
+function lerp(k){ for(const key in C){ const o=C[key]; if(!o.cur) o.cur=new THREE.Color(); CUR.copy(o.night).lerp(o.day, k); o.cur.setRGB(CUR.r, CUR.g, CUR.b); } }
 
 // ===== 灯光 =====
 const hemi = new THREE.HemisphereLight(0xf6e8d8, 0x4a5a6a, .8);
