@@ -2335,7 +2335,6 @@ camera.position.set(15, 9, 16);
 THREE.ColorManagement.enabled = true;
 const renderer = new THREE.WebGLRenderer({antialias:true, outputEncoding:THREE.sRGBEncoding});
 renderer.setSize(innerWidth, innerHeight);
-  if (composer) composer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3022,13 +3021,13 @@ function animate(){
 
   oceanMat.uniforms.uTime.value = t;
   controls.update();
-  if (composer) composer.render(); else renderer.render(scene, camera);
+  if (composer) { try { composer.render(); } catch (e) { console.warn('[enh] 后期渲染失败，回退基础渲染:', e); renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
   requestAnimationFrame(animate);
 }
 animate();
 addEventListener('resize', ()=>{
   camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth, innerHeight); if (composer) composer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
